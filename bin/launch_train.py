@@ -232,10 +232,10 @@ def main():
         if (ctm_inferencer._counter % snapshot_interval == 0):
             ctm_inferencer.export_beta(os.path.join(output_directory, 'exp_beta-' + str(ctm_inferencer._counter)));
             model_snapshot_path = os.path.join(output_directory, 'model-' + str(ctm_inferencer._counter));
-            pickle.dump(ctm_inferencer, open(model_snapshot_path, 'wb'));
+            pickle.dump(list(ctm_inferencer.items()), open(model_snapshot_path, 'wb'));
 
     model_snapshot_path = os.path.join(output_directory, 'model-' + str(ctm_inferencer._counter));
-    pickle.dump(list(ctm_inferencer.items), open(model_snapshot_path, 'wb'));
+    pickle.dump(list(ctm_inferencer.items()), open(model_snapshot_path, 'wb'));
 
 if __name__ == '__main__':
     main()
