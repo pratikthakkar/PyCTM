@@ -235,7 +235,7 @@ def main():
             pickle.dump(ctm_inferencer, open(model_snapshot_path, 'wb'));
 
     model_snapshot_path = os.path.join(output_directory, 'model-' + str(ctm_inferencer._counter));
-    pickle.dump(ctm_inferencer, open(model_snapshot_path, 'wb'));
+    pickle.dump(list(ctm_inferencer.items), open(model_snapshot_path, 'wb'));
 
 if __name__ == '__main__':
     main()
