@@ -235,7 +235,8 @@ def main():
             pickle.dump(list(ctm_inferencer.items()), open(model_snapshot_path, 'wb'));
 
     model_snapshot_path = os.path.join(output_directory, 'model-' + str(ctm_inferencer._counter));
-    pickle.dump(list(ctm_inferencer.items()), open(model_snapshot_path, 'wb'));
-
+    with open(model_snapshot_path, 'wb') as handle:
+        pickle.dump(ctm_inferencer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
 if __name__ == '__main__':
     main()
