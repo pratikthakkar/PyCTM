@@ -8,6 +8,7 @@ import numpy as np
 import queue
 import scipy
 import scipy.misc
+import scipy.special
 import scipy.optimize
 import sklearn
 import sklearn.covariance
@@ -54,7 +55,7 @@ class Process_E_Step_Queue(multiprocessing.Process):
         (self._number_of_topics, self._number_of_types) = self._E_log_eta.shape
 
         if result_sufficient_statistics_queue is not None:
-            self._E_log_prob_eta = self._E_log_eta - scipy.misc.logsumexp(
+            self._E_log_prob_eta = self._E_log_eta - scipy.special.logsumexp(
                 self._E_log_eta, axis=1)[:, np.newaxis]
 
         self.optimize_doc_lambda = optimize_doc_lambda
@@ -123,7 +124,7 @@ class Process_E_Step_Queue(multiprocessing.Process):
                 log_phi = self._E_log_eta[:, term_ids] + doc_lambda[:, np.
                                                                     newaxis]
                 assert log_phi.shape == (self._number_of_topics, len(term_ids))
-                log_phi -= scipy.misc.logsumexp(log_phi,
+                log_phi -= scipy.special.logsumexp(log_phi,
                                                 axis=0)[np.newaxis, :]
                 assert log_phi.shape == (self._number_of_topics, len(term_ids))
 
@@ -135,7 +136,7 @@ class Process_E_Step_Queue(multiprocessing.Process):
 
                 # update lambda
                 sum_phi = np.exp(
-                    scipy.misc.logsumexp(
+                    scipy.special.logsumexp(
                         log_phi + np.log(term_counts), axis=1))
                 arguments = (
                     doc_nu_square, doc_zeta_factor, sum_phi, doc_word_count)
@@ -218,7 +219,7 @@ class Process_E_Step_Queue(multiprocessing.Process):
                 np.sum(np.exp(log_phi) * term_counts, axis=1) *
                 doc_lambda)
             # use the fact that doc_zeta = np.sum(np.exp(doc_lambda+0.5*doc_nu_square)), to cancel the factors
-            document_log_likelihood -= scipy.misc.logsumexp(
+            document_log_likelihood -= scipy.special.logsumexp(
                 doc_lambda + 0.5 * doc_nu_square) * doc_word_count
 
             document_log_likelihood += 0.5 * self._number_of_topics
@@ -377,7 +378,7 @@ class VariationalBayes(Inferencer):
         assert E_log_eta.shape == (
             self._number_of_topics, self._number_of_types)
         # if parsed_corpus!=None:
-        # E_log_prob_eta = E_log_eta-scipy.misc.logsumexp(E_log_eta, axis=1)[:, np.newaxis]
+        # E_log_prob_eta = E_log_eta-scipy.special.logsumexp(E_log_eta, axis=1)[:, np.newaxis]
 
         task_queue = multiprocessing.JoinableQueue()
         for (doc_id, word_id, word_ct) in zip(list(range(number_of_documents)),
@@ -561,7 +562,7 @@ class VariationalBayes(Inferencer):
         assert E_log_eta.shape == (
             self._number_of_topics, self._number_of_types)
         if parsed_corpus is not None:
-            E_log_prob_eta = E_log_eta - scipy.misc.logsumexp(
+            E_log_prob_eta = E_log_eta - scipy.special.logsumexp(
                 E_log_eta, axis=1)[:, np.newaxis]
 
         document_log_likelihood = 0
@@ -619,7 +620,7 @@ class VariationalBayes(Inferencer):
                     self._number_of_topics, self._number_of_types)
                 log_phi = E_log_eta[:, term_ids] + doc_lambda[:, np.newaxis]
                 assert log_phi.shape == (self._number_of_topics, len(term_ids))
-                log_phi -= scipy.misc.logsumexp(log_phi,
+                log_phi -= scipy.special.logsumexp(log_phi,
                                                 axis=0)[np.newaxis, :]
                 assert log_phi.shape == (self._number_of_topics, len(term_ids))
 
@@ -631,7 +632,7 @@ class VariationalBayes(Inferencer):
 
                 # update lambda
                 sum_phi = np.exp(
-                    scipy.misc.logsumexp(
+                    scipy.special.logsumexp(
                         log_phi + np.log(term_counts), axis=1))
                 arguments = (
                     doc_nu_square, doc_zeta_factor, sum_phi, doc_word_count)
@@ -730,7 +731,7 @@ class VariationalBayes(Inferencer):
                 np.sum(np.exp(log_phi) * term_counts, axis=1) *
                 doc_lambda)
             # use the fact that doc_zeta = np.sum(np.exp(doc_lambda+0.5*doc_nu_square)), to cancel the factors
-            document_log_likelihood -= scipy.misc.logsumexp(
+            document_log_likelihood -= scipy.special.logsumexp(
                 doc_lambda + 0.5 * doc_nu_square) * doc_word_count
 
             document_log_likelihood += 0.5 * self._number_of_topics
@@ -804,7 +805,7 @@ class VariationalBayes(Inferencer):
         # doc_lambda = doc_lambda[0, :];
         assert doc_lambda.shape == (self._number_of_topics, )
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -835,7 +836,7 @@ class VariationalBayes(Inferencer):
             self._number_of_topics, self._number_of_topics)
         assert sum_phi.shape == (self._number_of_topics, )
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -858,7 +859,7 @@ class VariationalBayes(Inferencer):
 
     def f_hessian_doc_lambda(self, doc_lambda, *args):
         (doc_nu_square, doc_zeta_factor, sum_phi, total_word_count) = args
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -887,12 +888,12 @@ class VariationalBayes(Inferencer):
             self._number_of_topics, self._number_of_topics)
         assert direction_vector.shape == (self._number_of_topics, )
 
-        log_exp_over_doc_zeta_a = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_a = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             direction_vector[:, np.newaxis] *
             self._hessian_direction_approximation_epsilon -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
-        log_exp_over_doc_zeta_b = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_b = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         assert log_exp_over_doc_zeta_a.shape == (self._number_of_topics, )
@@ -950,7 +951,7 @@ class VariationalBayes(Inferencer):
         assert doc_zeta_factor.shape == (
             self._number_of_topics, self._number_of_topics)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -975,7 +976,7 @@ class VariationalBayes(Inferencer):
         assert doc_zeta_factor.shape == (
             self._number_of_topics, self._number_of_topics)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -996,7 +997,7 @@ class VariationalBayes(Inferencer):
         assert doc_zeta_factor.shape == (
             self._number_of_topics, self._number_of_topics)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1023,12 +1024,12 @@ class VariationalBayes(Inferencer):
         assert doc_zeta_factor.shape == (
             self._number_of_topics, self._number_of_topics)
 
-        log_exp_over_doc_zeta_a = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_a = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * (
                 doc_nu_square[:, np.newaxis] +
                 direction_vector[:, np.newaxis] *
                 self._hessian_direction_approximation_epsilon), axis=1)
-        log_exp_over_doc_zeta_b = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_b = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
 
@@ -1091,7 +1092,7 @@ class VariationalBayes(Inferencer):
 
         exp_log_doc_nu_square = np.exp(log_doc_nu_square)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_log_doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1118,7 +1119,7 @@ class VariationalBayes(Inferencer):
 
         exp_doc_log_nu_square = np.exp(log_doc_nu_square)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_doc_log_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1155,11 +1156,11 @@ class VariationalBayes(Inferencer):
             log_doc_nu_square +
             direction_vector * self._hessian_direction_approximation_epsilon)
 
-        log_exp_over_doc_zeta_epsilon_direction = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_epsilon_direction = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_log_doc_nu_square_epsilon_direction[:, np.newaxis],
             axis=1)
-        log_exp_over_doc_zeta = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_log_doc_nu_square[:, np.newaxis], axis=1)
 
@@ -1328,7 +1329,7 @@ class VariationalBayes(Inferencer):
 
             beta_probability = np.exp(
                 E_log_eta[topic_index, :] -
-                scipy.misc.logsumexp(E_log_eta[topic_index, :]))
+                scipy.special.logsumexp(E_log_eta[topic_index, :]))
 
             i = 0
             for type_index in reversed(np.argsort(beta_probability)):
@@ -1365,7 +1366,7 @@ class VariationalBayes(Inferencer):
 
         newton_method_power_index = 0
         for newton_method_iteration_index in range(newton_method_iteration):
-            exp_over_doc_zeta = scipy.misc.logsumexp(
+            exp_over_doc_zeta = scipy.special.logsumexp(
                 doc_zeta_factor - doc_lambda[:, np.newaxis] -
                 0.5 * doc_nu_square[:, np.newaxis], axis=1)
             exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1461,9 +1462,9 @@ class VariationalBayes(Inferencer):
         for newton_method_iteration_index in range(newton_method_iteration):
             # print doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * doc_nu_square[:, np.newaxis]
             # exp_over_doc_zeta = 1.0 / np.sum(np.exp(doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * doc_nu_square[:, np.newaxis]), axis=1);
-            # print scipy.misc.logsumexp(doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * doc_nu_square[:, np.newaxis], axis=1)
-            # exp_over_doc_zeta = np.exp(-scipy.misc.logsumexp(doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * doc_nu_square[:, np.newaxis], axis=1));
-            exp_over_doc_zeta = scipy.misc.logsumexp(
+            # print scipy.special.logsumexp(doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * doc_nu_square[:, np.newaxis], axis=1)
+            # exp_over_doc_zeta = np.exp(-scipy.special.logsumexp(doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * doc_nu_square[:, np.newaxis], axis=1));
+            exp_over_doc_zeta = scipy.special.logsumexp(
                 doc_zeta_factor - doc_lambda[:, np.newaxis] -
                 0.5 * doc_nu_square[:, np.newaxis], axis=1)
             # exp_over_doc_zeta = np.clip(exp_over_doc_zeta, -10, +10);
@@ -1531,7 +1532,7 @@ class VariationalBayes(Inferencer):
 
         newton_method_power_index = 0
         for newton_method_iteration_index in range(newton_method_iteration):
-            log_exp_over_doc_zeta_combine = scipy.misc.logsumexp(
+            log_exp_over_doc_zeta_combine = scipy.special.logsumexp(
                 doc_zeta_factor - doc_lambda[:, np.newaxis] -
                 0.5 * exp_doc_log_nu_square[:, np.newaxis] -
                 doc_log_nu_square[:, np.newaxis], axis=1)
@@ -1673,7 +1674,7 @@ class VariationalBayes(Inferencer):
             self._number_of_topics, self._number_of_topics)
         assert sum_phi.shape == (self._number_of_topics, )
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1703,7 +1704,7 @@ class VariationalBayes(Inferencer):
             self._number_of_topics, self._number_of_topics)
         assert sum_phi.shape == (self._number_of_topics, )
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1726,7 +1727,7 @@ class VariationalBayes(Inferencer):
     def second_derivative_lambda(
             self, doc_lambda, doc_nu_square, doc_zeta_factor,
             total_word_count):
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1754,11 +1755,11 @@ class VariationalBayes(Inferencer):
             self._number_of_topics, self._number_of_topics)
         assert direction_vector.shape == (self._number_of_topics, )
 
-        log_exp_over_doc_zeta_a = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_a = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             direction_vector[:, np.newaxis] * epsilon -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
-        log_exp_over_doc_zeta_b = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_b = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         assert log_exp_over_doc_zeta_a.shape == (self._number_of_topics, )
@@ -1947,7 +1948,7 @@ class VariationalBayes(Inferencer):
         assert doc_zeta_factor.shape == (
             self._number_of_topics, self._number_of_topics)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1971,7 +1972,7 @@ class VariationalBayes(Inferencer):
         assert doc_zeta_factor.shape == (
             self._number_of_topics, self._number_of_topics)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -1992,7 +1993,7 @@ class VariationalBayes(Inferencer):
         assert doc_zeta_factor.shape == (
             self._number_of_topics, self._number_of_topics)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -2011,11 +2012,11 @@ class VariationalBayes(Inferencer):
             self._number_of_topics, self._number_of_topics)
         assert direction_vector.shape == (self._number_of_topics, )
 
-        log_exp_over_doc_zeta_a = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_a = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] - 0.5 * (
                 doc_nu_square[:, np.newaxis] +
                 direction_vector[:, np.newaxis] * epsilon), axis=1)
-        log_exp_over_doc_zeta_b = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_b = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * doc_nu_square[:, np.newaxis], axis=1)
 
@@ -2213,7 +2214,7 @@ class VariationalBayes(Inferencer):
 
         exp_doc_log_nu_square = np.exp(doc_log_nu_square)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_doc_log_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -2237,7 +2238,7 @@ class VariationalBayes(Inferencer):
 
         exp_doc_log_nu_square = np.exp(doc_log_nu_square)
 
-        exp_over_doc_zeta = scipy.misc.logsumexp(
+        exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_doc_log_nu_square[:, np.newaxis], axis=1)
         exp_over_doc_zeta = np.exp(-exp_over_doc_zeta)
@@ -2265,11 +2266,11 @@ class VariationalBayes(Inferencer):
         exp_doc_log_nu_square_epsilon_direction = np.exp(
             doc_log_nu_square + direction_vector * epsilon)
 
-        log_exp_over_doc_zeta_epsilon_direction = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta_epsilon_direction = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_doc_log_nu_square_epsilon_direction[:, np.newaxis],
             axis=1)
-        log_exp_over_doc_zeta = scipy.misc.logsumexp(
+        log_exp_over_doc_zeta = scipy.special.logsumexp(
             doc_zeta_factor - doc_lambda[:, np.newaxis] -
             0.5 * exp_doc_log_nu_square[:, np.newaxis], axis=1)
 
