@@ -232,11 +232,18 @@ def main():
         if (ctm_inferencer._counter % snapshot_interval == 0):
             ctm_inferencer.export_beta(os.path.join(output_directory, 'exp_beta-' + str(ctm_inferencer._counter)));
             model_snapshot_path = os.path.join(output_directory, 'model-' + str(ctm_inferencer._counter));
-            pickle.dump(list(ctm_inferencer.items()), open(model_snapshot_path, 'wb'));
+            with open(model_snapshot_path, 'wb') as f:
+                pickle.dump(ctm_inferencer, f, pickle.HIGHEST_PROTOCOL)
+            //pickle.dump(list(ctm_inferencer.items()), open(model_snapshot_path, 'wb'));
 
     model_snapshot_path = os.path.join(output_directory, 'model-' + str(ctm_inferencer._counter));
-    
-    pickle.dump(list(ctm_inferencer.values()), open(model_snapshot_path, 'wb'));
+    with open(model_snapshot_path, 'wb') as f:
+        pickle.dump(ctm_inferencer, f, pickle.HIGHEST_PROTOCOL)
+    //pickle.dump(list(ctm_inferencer.values()), open(model_snapshot_path, 'wb'));
+
+def save_obj(obj, name ):
+    with open('obj/'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 if __name__ == '__main__':
     main()
